@@ -31,22 +31,18 @@ public class PlayerController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<PlayerResponse> responses = playerDAO.allWithPaging();
+        List<Indexer> responses1 = indexerDAO.all();
 
         request.setAttribute("players", responses);
+        request.setAttribute("indexers", responses1);
 
         request.getRequestDispatcher("players/list.jsp").forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        boolean result = playerService.createPlayer(request, response);
+        playerService.createPlayer(request, response);
 
-        if (!result) {
-            System.out.println("Error");
-            response.sendRedirect("/players");
-        }
-
-        System.out.println("Success");
         response.sendRedirect("/players");
     }
 

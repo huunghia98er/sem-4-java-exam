@@ -2,12 +2,15 @@ package org.sem4.exam.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.sem4.exam.entity.Indexer;
 import org.sem4.exam.entity.Player;
 import org.sem4.exam.entity.PlayerIndexer;
 import org.sem4.exam.repository.IndexerRepository;
 import org.sem4.exam.repository.PlayerIndexerRepository;
 import org.sem4.exam.repository.PlayerRepository;
+import org.sem4.exam.utils.HibernateUtils;
 
 import java.util.Objects;
 
@@ -20,33 +23,53 @@ public class PlayerService {
     private IndexerRepository indexerDAO = new IndexerRepository();
     private PlayerIndexerRepository playerIndexerRepository = new PlayerIndexerRepository();
 
-    public boolean createPlayer(HttpServletRequest request, HttpServletResponse response) {
-        int indexId = Integer.parseInt(request.getParameter("indexId"));
-        Indexer indexer = indexerDAO.findById(indexId);
+    public void createPlayer(HttpServletRequest request, HttpServletResponse response) {
+        Transaction transaction = null;
+        Session session = null;
+        try {
+            session = HibernateUtils.getSessionFactory().openSession();
+            transaction = session.beginTransaction();
 
-        if (Objects.isNull(indexer)) {
-            return false;
+            int indexId = Integer.parseInt(request.getParameter("indexId"));
+            Indexer indexer = indexerDAO.findById(indexId);
+
+            if (Objects.isNull(indexer)) {
+                return;
+            }
+
+            String fullName = request.getParameter("name");
+            String age = request.getParameter("age");
+
+            Player player = new Player();
+            player.setName(fullName.split(" ")[0]);
+            player.setFullName(fullName);
+            player.setAge(age);
+            player.setIndexerId(indexId);
+
+            session.persist(player);
+
+            Float value = Float.valueOf(request.getParameter("value"));
+            PlayerIndexer playerIndexer = new PlayerIndexer();
+            playerIndexer.setPlayer(player);
+            playerIndexer.setIndexer(indexer);
+            playerIndexer.setValue(value);
+            session.persist(playerIndexer);
+
+            // Commit transaction
+            transaction.commit();
+
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
-
-        String fullName = request.getParameter("name");
-        String age = request.getParameter("age");
-
-        Player player = new Player();
-        player.setName(fullName.split(" ")[0]);
-        player.setFullName(fullName);
-        player.setAge(age);
-        player.setIndexerId(indexId);
-
-        playerDAO.create(player);
-
-        Float value = Float.valueOf(request.getParameter("value"));
-        PlayerIndexer playerIndexer = new PlayerIndexer();
-        playerIndexer.setPlayer(player);
-        playerIndexer.setIndexer(indexer);
-        playerIndexer.setValue(value);
-        playerIndexerRepository.create(playerIndexer);
-        return true;
     }
+
 
     public boolean delete(HttpServletRequest request, HttpServletResponse response) {
         int id = Integer.parseInt(request.getParameter("id"));
