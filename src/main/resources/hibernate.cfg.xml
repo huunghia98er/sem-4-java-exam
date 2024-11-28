@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <!-- Cấu hình kết nối database -->
+        <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <property name="hibernate.connection.url">jdbc:mysql://192.168.137.135:3306/player_evaluation</property>
+        <property name="hibernate.connection.username">root</property>
+        <property name="hibernate.connection.password">admin@123</property>
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+
+        <!-- Hibernate settings -->
+        <property name="hibernate.show_sql">true</property>
+        <property name="hibernate.format_sql">true</property>
+        <property name="hibernate.hbm2ddl.auto">update</property>
+
+        <!-- Các entity -->
+        <mapping class="org.sem4.exam.entity.Player"/>
+        <mapping class="org.sem4.exam.entity.Indexer"/>
+        <mapping class="org.sem4.exam.entity.PlayerIndexer"/>
+    </session-factory>
+</hibernate-configuration>
